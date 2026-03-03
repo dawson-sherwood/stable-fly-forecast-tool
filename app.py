@@ -451,12 +451,12 @@ elif st.session_state.step == 12:
         st.write("")
         col_back, col_next = st.columns(2)
         with col_back:
-            if st.button("Back", width="stretch", type="secondary"):
+            if st.button("Back", use_container_width=True, type="secondary"):
                 st.session_state.result = None
                 st.session_state.step = 11
                 st.rerun()
         with col_next:
-            if st.button("Next", width="stretch", type="primary"):
+            if st.button("Next", use_container_width=True, type="primary"):
                 st.session_state.step = 13
                 st.rerun()
 
