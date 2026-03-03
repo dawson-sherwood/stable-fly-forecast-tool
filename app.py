@@ -412,8 +412,7 @@ elif st.session_state.step == 12:
         fig = go.Figure(go.Indicator(
             mode="gauge",
             value=score,
-            title={"text": "Fly Risk Score", "font": {"weight": "bold", "size": 30, "color": BRAND_NAVY}}, 
-            gauge={
+            title={"text": "<b>Fly Risk Score</b>", "font": {"size": 30, "color": BRAND_NAVY}},            gauge={
                 "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": BRAND_NAVY},
                 "bar": {"color": BRAND_NAVY, "thickness": 0.15},
                 "steps": [
