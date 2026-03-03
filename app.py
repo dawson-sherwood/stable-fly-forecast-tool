@@ -242,7 +242,7 @@ if st.session_state.step == 1:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         try:
-            st.image(str(LOGO_PATH), width='stretch')
+            st.image(str(LOGO_PATH), use_container_width=True)
         except Exception:
             st.write("*(Logo placeholder)*")
             
@@ -258,7 +258,7 @@ if st.session_state.step == 1:
     
     zip_in = st.text_input("Enter Farm ZIP Code—we'll use this to pull your local weather data", value=st.session_state.zip_code, placeholder="e.g., 30542", max_chars=10).strip()
     
-    if st.button("Continue", type="primary", width='stretch'):
+    if st.button("Continue", type="primary", use_container_width=True):
         if not validate_zip(zip_in):
             st.error("Please enter a valid 5-digit ZIP code.")
         else:
@@ -284,11 +284,11 @@ elif st.session_state.step == 2:
     st.write("")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("Back", width='stretch'):
+        if st.button("Back", use_container_width=True):
             st.session_state.step = 1
             st.rerun()
     with c2:
-        if st.button("Start Questions", type="primary", width='stretch'):
+        if st.button("Start Questions", type="primary", use_container_width=True):
             st.session_state.step = 3
             st.rerun()
 
@@ -305,7 +305,7 @@ elif 3 <= st.session_state.step <= 11:
         st.markdown(f'<h2 class="shs-h2" style="margin-top:10px;">{q["title"]}</h2>', unsafe_allow_html=True)
     with header_col2:
         try:
-            st.image(str(LOGO_PATH), width='stretch')
+            st.image(str(LOGO_PATH), use_container_width=True)
         except Exception:
             pass
             
@@ -329,12 +329,12 @@ elif 3 <= st.session_state.step <= 11:
     st.write("")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Back", width='stretch'):
+        if st.button("Back", use_container_width=True):
             st.session_state.step -= 1
             st.rerun()
     with col2:
         btn_text = "Next" if st.session_state.step < 11 else "Calculate Risk Score"
-        if st.button(btn_text, type="primary", width='stretch'):
+        if st.button(btn_text, type="primary", use_container_width=True):
             st.session_state.step += 1
             st.rerun()
 
@@ -473,7 +473,7 @@ elif st.session_state.step == 13:
         st.markdown('<h2 class="shs-h2" style="margin-top:10px;">Your Farm\'s Assessment</h2>', unsafe_allow_html=True)
     with header_col2:
         try:
-            st.image(str(LOGO_PATH), width='stretch')
+            st.image(str(LOGO_PATH), use_container_width=True)
         except Exception:
             pass
     
@@ -519,7 +519,7 @@ elif st.session_state.step == 13:
     st.write("")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("Start Over", width='stretch', type="secondary"):
+        if st.button("Start Over", use_container_width=True, type="secondary"):
             reset_all()
     with c2:
-        st.link_button("Contact Us", "https://specialtyherdsolutions.com/contact/", type="primary", width='stretch')
+        st.link_button("Contact Us", "https://specialtyherdsolutions.com/contact/", type="primary", use_container_width=True)
