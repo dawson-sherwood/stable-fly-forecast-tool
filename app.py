@@ -416,10 +416,10 @@ elif st.session_state.step == 12:
                 "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": BRAND_NAVY},
                 "bar": {"color": BRAND_NAVY, "thickness": 0.15},
                 "steps": [
-                    {"range": [0, 30], "color": BRAND_TEAL},
-                    {"range": [30, 60], "color": BRAND_YELLOW},
-                    {"range": [60, 80], "color": BRAND_ORANGE},
-                    {"range": [80, 100], "color": BRAND_RED},
+                    {"range": [0, 25], "color": BRAND_TEAL},
+                    {"range": [25, 44], "color": BRAND_YELLOW},
+                    {"range": [44, 79], "color": BRAND_ORANGE},
+                    {"range": [79, 100], "color": BRAND_RED},
                 ],
                 "threshold": {
                     "line": {"color": "#555555", "width": 4}, 
