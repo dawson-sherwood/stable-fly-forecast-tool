@@ -782,7 +782,7 @@ elif st.session_state.step == 13:
                     line-height:1.65;
                     padding-top:0.15rem;
                 ">
-                    Scores in this range suggest <strong>{band.lower()}</strong> stable fly pressure relative to your current weather pattern and management inputs.
+                    Scores in this range suggest <strong>{band.lower()}</strong> fly pressure relative to your current weather pattern and management inputs.
                 </div>
             </div>
             """,
@@ -795,7 +795,7 @@ elif st.session_state.step == 13:
             <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">What does this mean?</div>
             <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                 We look at the next 7 days of weather combined with 8 years of historical climate data for your ZIP code to
-                predict how local temperatures and precipitation will drive stable fly emergence over the next 30 days.
+                predict how local temperatures and precipitation will drive fly emergence over the next 30 days.
             </div>
             <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                 <strong>{band_explanations.get(band, '')}</strong>
