@@ -1,11 +1,12 @@
 import concurrent.futures
 from datetime import date, timedelta
 from pathlib import Path
+from PIL import Image
 
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-#test
+
 from baseline import acis_to_daily_schema, baseline_to_long, build_daily_dd_percentiles
 from config import DEFAULT_BASE_C, DEFAULT_UPPER_C
 from data_sources import (
@@ -48,7 +49,8 @@ BAND_STEPS = [
     (80, 100, "Peak", BRAND_RED),
 ]
 
-MILK_LOSS_CITATION_NOTE = "Source citation for the 15-30% milk production statement is still needed"
+MILK_LOSS_PAPER_URL = "https://www.mdpi.com/2306-7381/12/11/1035"
+MILK_LOSS_FOOTNOTE = "https://www.mdpi.com/2306-7381/12/11/1035"
 
 st.set_page_config(page_title="Fly Pressure Forecast Tool", layout="centered")
 
@@ -275,9 +277,9 @@ QUESTIONS = [
         "text": "1. How thoroughly and how often are sanitation tasks performed on your dairy farm?",
         "type": "radio",
         "options": {
-            "Thoroughly, at least once per day": 0.0,
-            "Moderately, several times per week": 0.33,
-            "Lightly, once per week": 0.66,
+            "Thoroughly, at least once per day": 0.25,
+            "Moderately, several times per week": 0.50,
+            "Lightly, once per week": 0.75,
             "Not performed regularly": 1.0,
         },
     },
@@ -288,9 +290,9 @@ QUESTIONS = [
         "text": "2. How thoroughly and how often are manure management tasks performed on your dairy operation?",
         "type": "radio",
         "options": {
-            "Thoroughly, at least once per day": 0.0,
-            "Moderately, several times per week": 0.33,
-            "Lightly, once per week": 0.66,
+            "Thoroughly, at least once per day": 0.25,
+            "Moderately, several times per week": 0.50,
+            "Lightly, once per week": 0.75,
             "Not performed regularly": 1.0,
         },
     },
@@ -304,7 +306,7 @@ QUESTIONS = [
             "No": 0.0,
             "Yes, in hutches": 1.0,
             "Yes, calves in group housing": 0.75,
-            "Yes, older calves over 600lbs in group pens": 0.5,
+            "Yes, older calves over 600lbs in group pens": 0.50,
         },
     },
     {
@@ -315,7 +317,7 @@ QUESTIONS = [
         "type": "radio",
         "options": {
             "Removed from the farm entirely": 0.0,
-            "Flushed/scraped into lagoon/digester or separator on-site": 0.5,
+            "Flushed/scraped into lagoon/digester or separator on-site": 0.50,
             "Composted on-farm": 1.0,
         },
     },
@@ -327,9 +329,9 @@ QUESTIONS = [
         "extra": "Examples include use of portable thermal foggers, handheld units or integrated high-pressure systems.",
         "type": "radio",
         "options": {
-            "Thoroughly, at least once per day": 0.0,
-            "Moderately, several times per week": 0.33,
-            "Lightly, once per week": 0.66,
+            "Thoroughly, at least once per day": 0.25,
+            "Moderately, several times per week": 0.50,
+            "Lightly, once per week": 0.75,
             "Not performed regularly": 1.0,
         },
     },
@@ -340,9 +342,9 @@ QUESTIONS = [
         "text": "6. How thoroughly and how often are you <u>spraying or pouring animals</u>?",
         "type": "radio",
         "options": {
-            "Thoroughly, at least once per day": 0.0,
-            "Moderately, several times per week": 0.33,
-            "Lightly, once per week": 0.66,
+            "Thoroughly, at least once per day": 0.25,
+            "Moderately, several times per week": 0.50,
+            "Lightly, once per week": 0.75,
             "Not performed regularly": 1.0,
         },
     },
@@ -352,7 +354,7 @@ QUESTIONS = [
         "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
         "text": "7. Are you using a <u>feed-through</u> product (IGR or Larvicide) to prevent fly larvae from maturing in manure?",
         "type": "radio",
-        "options": {"Yes": 0.0, "No": 1.0},
+        "options": {"Yes": 0.25, "No": 1.0},
     },
     {
         "id": "q8_wasps",
@@ -360,7 +362,7 @@ QUESTIONS = [
         "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
         "text": "8. Are you using fly predators (parasitic wasps) around the dairy?",
         "type": "radio",
-        "options": {"Yes": 0.0, "No": 1.0},
+        "options": {"Yes": 0.25, "No": 1.0},
     },
     {
         "id": "q9_bait",
@@ -368,7 +370,7 @@ QUESTIONS = [
         "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
         "text": "9. Are you using fly bait (scatter, paint-on or spray)?",
         "type": "radio",
-        "options": {"Yes": 0.0, "No": 1.0},
+        "options": {"Yes": 0.25, "No": 1.0},
     },
 ]
 
@@ -509,7 +511,7 @@ def render_question_header(question):
         st.markdown(f'<div class="shs-desc">{question["desc"]}</div>', unsafe_allow_html=True)
     with logo_col:
         try:
-            st.image(str(LOGO_PATH), use_container_width=True)
+            st.image(Image.open(LOGO_PATH), use_container_width=True)
         except Exception:
             pass
 
@@ -535,7 +537,7 @@ if st.session_state.step == 1:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         try:
-            st.image(str(LOGO_PATH), use_container_width=True)
+            st.image(Image.open(LOGO_PATH), use_container_width=True)
         except Exception:
             st.write("*(Logo placeholder)*")
 
@@ -557,15 +559,18 @@ if st.session_state.step == 1:
     ).strip()
 
     if st.button("Continue", type="primary", use_container_width=True):
-        if not validate_zip(zip_in):
+        # Normalize a 9-digit zip to 5 digits for the API
+        clean_zip = ''.join(filter(str.isdigit, zip_in))[:5]
+        
+        if not validate_zip(clean_zip):
             st.error("Please enter a valid 5-digit ZIP code.")
         else:
             with st.spinner("Locating..."):
-                lat, lon = get_lat_lon_from_zip(zip_in)
+                lat, lon = get_lat_lon_from_zip(clean_zip)
                 if lat is None or lon is None:
                     st.error("ZIP lookup failed. Please try again.")
                 else:
-                    st.session_state.zip_code = zip_in
+                    st.session_state.zip_code = clean_zip
                     st.session_state.lat = float(lat)
                     st.session_state.lon = float(lon)
                     st.session_state.step = 2
@@ -604,24 +609,23 @@ elif 3 <= st.session_state.step <= 11:
     render_question_text(q)
 
     if q["type"] == "radio":
-        current_val = st.session_state[q["id"]]
-        current_idx = list(q["options"].keys()).index(current_val)
-        selected = st.radio(
+        # Native key-binding eliminates the stuttering issue completely
+        st.radio(
             "Select one:",
             options=list(q["options"].keys()),
-            index=current_idx,
-            key=f"ui_{q['id']}",
+            key=q["id"],
             label_visibility="collapsed",
         )
-        st.session_state[q["id"]] = selected
 
     elif q["type"] == "multiselect":
-        selected_options = []
+        # Streamlit handles the checkbox state natively via keys
         for opt in q["options"].keys():
-            is_checked = opt in st.session_state[q["id"]]
-            if st.checkbox(opt, value=is_checked, key=f"ui_{q['id']}_{opt}"):
-                selected_options.append(opt)
-        st.session_state[q["id"]] = selected_options
+            chk_key = f"ui_{q['id']}_{opt}"
+            # Initialize default state for this specific option if not set
+            if chk_key not in st.session_state:
+                st.session_state[chk_key] = (opt in st.session_state[q["id"]])
+            
+            st.checkbox(opt, key=chk_key)
 
     st.write("")
     col1, col2 = st.columns(2)
@@ -642,10 +646,12 @@ elif st.session_state.step == 12:
     if not st.session_state.result:
         answers_0_1 = {}
         for q in QUESTIONS:
-            ans = st.session_state[q["id"]]
             if q["type"] == "radio":
+                ans = st.session_state[q["id"]]
                 answers_0_1[q["id"]] = q["options"][ans]
             elif q["type"] == "multiselect":
+                # Gather multiselect responses dynamically
+                ans = [opt for opt in q["options"].keys() if st.session_state.get(f"ui_{q['id']}_{opt}", False)]
                 vals = [q["options"][a] for a in ans]
                 answers_0_1[q["id"]] = max(vals, default=0.0)
 
@@ -739,7 +745,7 @@ elif st.session_state.step == 13:
         st.markdown("<h2 class='shs-h2' style='margin-top:10px;'>Your Farm's Assessment</h2>", unsafe_allow_html=True)
     with header_col2:
         try:
-            st.image(str(LOGO_PATH), use_container_width=True)
+            st.image(Image.open(LOGO_PATH), use_container_width=True)
         except Exception:
             pass
 
@@ -804,7 +810,7 @@ elif st.session_state.step == 13:
                 <strong>Did You Know...</strong> stable flies can lower milk production by 15-30%<sup>1</sup>. Prevention and early intervention
                 measures are key to a sound fly control strategy. Don't wait until you see cows bunching, by then the economic loss has already begun.
             </div>
-            <div class="small-note" style="margin-bottom:1.1rem;"><sup>1</sup> {MILK_LOSS_CITATION_NOTE}</div>
+            <div class="small-note" style="margin-bottom:1.1rem;"><sup>1</sup><a href='{MILK_LOSS_PAPER_URL}' target='_blank'>{MILK_LOSS_FOOTNOTE}</a></div>
             <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">Take Action</div>
             <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65;">
                 Protect your herd and your bottom line with the <strong>ShieldStrong® Automated Fly Control System.</strong> Our set-and-forget
