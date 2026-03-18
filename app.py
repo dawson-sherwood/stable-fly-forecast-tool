@@ -811,7 +811,7 @@ elif st.session_state.step == 13:
                     line-height:1.65;
                     padding-top:0.15rem;
                 ">
-                    Scores in this range suggest <strong>{band.lower()}</strong> fly pressure relative to your current weather pattern and management inputs.
+                    Scores in this range suggest <strong>{band.lower()}</strong> fly pressure over the next 30 days relative to your current weather pattern and management inputs.
                 </div>
             </div>
             """,
