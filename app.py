@@ -374,6 +374,7 @@ QUESTIONS = [
     },
 ]
 
+# Initialize persistent storage for answers
 for q in QUESTIONS:
     if q["id"] not in st.session_state:
         st.session_state[q["id"]] = [] if q["type"] == "multiselect" else list(q["options"].keys())[0]
@@ -559,7 +560,6 @@ if st.session_state.step == 1:
     ).strip()
 
     if st.button("Continue", type="primary", use_container_width=True):
-        # Normalize a 9-digit zip to 5 digits for the API
         clean_zip = ''.join(filter(str.isdigit, zip_in))[:5]
         
         if not validate_zip(clean_zip):
@@ -609,23 +609,47 @@ elif 3 <= st.session_state.step <= 11:
     render_question_text(q)
 
     if q["type"] == "radio":
-        # Native key-binding eliminates the stuttering issue completely
+        ui_key = f"ui_{q['id']}"
+        
+        # Seed the ephemeral UI state with the safely stored persistent answer
+        if ui_key not in st.session_state:
+            st.session_state[ui_key] = st.session_state[q["id"]]
+            
+        # Callback to immediately save the answer when changed
+        def sync_radio(persist_key, ephemeral_key):
+            st.session_state[persist_key] = st.session_state[ephemeral_key]
+
         st.radio(
             "Select one:",
             options=list(q["options"].keys()),
-            key=q["id"],
+            key=ui_key,
+            on_change=sync_radio,
+            kwargs={"persist_key": q["id"], "ephemeral_key": ui_key},
             label_visibility="collapsed",
         )
 
     elif q["type"] == "multiselect":
-        # Streamlit handles the checkbox state natively via keys
+        # Callback to rebuild the entire multiselect list upon any checkbox click
+        def sync_multiselect(persist_key, options_dict, q_id):
+            selected = []
+            for option in options_dict.keys():
+                if st.session_state.get(f"ui_{q_id}_{option}", False):
+                    selected.append(option)
+            st.session_state[persist_key] = selected
+
         for opt in q["options"].keys():
             chk_key = f"ui_{q['id']}_{opt}"
-            # Initialize default state for this specific option if not set
+            
+            # Seed the ephemeral checkbox state
             if chk_key not in st.session_state:
                 st.session_state[chk_key] = (opt in st.session_state[q["id"]])
             
-            st.checkbox(opt, key=chk_key)
+            st.checkbox(
+                opt, 
+                key=chk_key,
+                on_change=sync_multiselect,
+                kwargs={"persist_key": q["id"], "options_dict": q["options"], "q_id": q["id"]}
+            )
 
     st.write("")
     col1, col2 = st.columns(2)
@@ -650,8 +674,7 @@ elif st.session_state.step == 12:
                 ans = st.session_state[q["id"]]
                 answers_0_1[q["id"]] = q["options"][ans]
             elif q["type"] == "multiselect":
-                # Gather multiselect responses dynamically
-                ans = [opt for opt in q["options"].keys() if st.session_state.get(f"ui_{q['id']}_{opt}", False)]
+                ans = st.session_state[q["id"]]
                 vals = [q["options"][a] for a in ans]
                 answers_0_1[q["id"]] = max(vals, default=0.0)
 
