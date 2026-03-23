@@ -363,7 +363,7 @@ QUESTIONS = [
         "id": "q8_wasps",
         "title": "Prevention & Control",
         "desc": PREV_DESC,
-        "text": "8. Are you using fly predators (parasitic wasps) around the dairy during the fly season in your region?",
+        "text": "8. Are you using <u>fly predators</u> (parasitic wasps) around the dairy during the fly season in your region?",
         "type": "radio",
         "options": {"Yes": 0.25, "No": 1.0},
     },
