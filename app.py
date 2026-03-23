@@ -825,7 +825,7 @@ elif st.session_state.step == 12:
                     <ul style="margin-top:0.5rem; margin-bottom:0.5rem; padding-left:1.5rem;">
                         <li>Set-and-forget system eliminates the need for manual application.</li>
                         <li>Reduce employee exposure to chemicals.</li>
-                        <li>Accurate dosing of insecticides -- every cow, every time.</li>
+                        <li>Accurate dosing of insecticides — every cow, every time.</li>
                         <li>FREE equipment, maintenance, and product delivery</li>
                     </ul>
                     Contact us now for a FREE consultation.
