@@ -262,7 +262,11 @@ def reset_all():
 # ----------------------------
 MANURE_DESC = (
     "Refers to practices and strategies to minimize the presence of manure and moisture for a prolonged period "
-    "of time in highly populated areas. Examples are flushing, scraping, and/or raking of animal confinement areas."
+    "of time in highly populated areas. Examples are flushing, scraping, and/or raking of animal confinement areas to keep moisture levels down and the area dry."
+)
+
+PREV_DESC = (
+    "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies. Examples include fogging, spraying, feedthroughs, fly predators, baits, etc."
 )
 
 QUESTIONS = [
@@ -287,7 +291,7 @@ QUESTIONS = [
         "id": "q2_manure_tasks",
         "title": "Manure Management",
         "desc": MANURE_DESC,
-        "text": "2. How thoroughly and how often are manure management tasks performed on your dairy operation?",
+        "text": "2. How thoroughly and how often are <u>manure management</u> tasks performed on your dairy operation?",
         "type": "radio",
         "options": {
             "Thoroughly, at least once per day": 0.25,
@@ -299,7 +303,7 @@ QUESTIONS = [
     {
         "id": "q3_calves",
         "title": "Manure Management",
-        "desc": MANURE_DESC + "\n\n<br>Calf housing setups impact moisture retention and overall fly breeding grounds.",
+        "desc": MANURE_DESC,
         "text": "3. Are there calves housed on farm? (Select all that apply)",
         "type": "multiselect",
         "options": {
@@ -312,9 +316,9 @@ QUESTIONS = [
     {
         "id": "q4_manure_store",
         "title": "Manure Management",
-        "desc": MANURE_DESC + "\n\n<br>How manure is stored heavily dictates fly emergence rates.",
-        "text": "4. Where is manure being managed or stored?",
-        "type": "radio",
+        "desc": MANURE_DESC,
+        "text": "4. Where is manure being managed or stored? (Select all that apply)",
+        "type": "multiselect",
         "options": {
             "Removed from the farm entirely": 0.0,
             "Flushed/scraped into lagoon/digester or separator on-site": 0.50,
@@ -324,9 +328,8 @@ QUESTIONS = [
     {
         "id": "q5_fogging",
         "title": "Prevention & Control",
-        "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
-        "text": "5. How thoroughly and how often are you <u>fogging</u> in and around the dairy?",
-        "extra": "Examples include use of portable thermal foggers, handheld units or integrated high-pressure systems.",
+        "desc": PREV_DESC,
+        "text": "5. How thoroughly and how often are you <u>fogging</u> in and around the dairy? Examples include use of portable thermal foggers, handheld units, or integrated high-pressure systems.",
         "type": "radio",
         "options": {
             "Thoroughly, at least once per day": 0.25,
@@ -338,8 +341,8 @@ QUESTIONS = [
     {
         "id": "q6_spraying",
         "title": "Prevention & Control",
-        "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
-        "text": "6. How thoroughly and how often are you <u>spraying or pouring animals</u>?",
+        "desc": PREV_DESC,
+        "text": "6. How thoroughly and how often are you <u>spraying or pouring animals</u> during the fly season in your region?",
         "type": "radio",
         "options": {
             "Thoroughly, at least once per day": 0.25,
@@ -351,24 +354,24 @@ QUESTIONS = [
     {
         "id": "q7_feedthrough",
         "title": "Prevention & Control",
-        "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
-        "text": "7. Are you using a <u>feed-through</u> product (IGR or Larvicide) to prevent fly larvae from maturing in manure?",
+        "desc": PREV_DESC,
+        "text": "7. Are you using a <u>feed-through</u> product during the fly season in your region?",
         "type": "radio",
         "options": {"Yes": 0.25, "No": 1.0},
     },
     {
         "id": "q8_wasps",
         "title": "Prevention & Control",
-        "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
-        "text": "8. Are you using fly predators (parasitic wasps) around the dairy?",
+        "desc": PREV_DESC,
+        "text": "8. Are you using fly predators (parasitic wasps) around the dairy during the fly season in your region?",
         "type": "radio",
         "options": {"Yes": 0.25, "No": 1.0},
     },
     {
         "id": "q9_bait",
         "title": "Prevention & Control",
-        "desc": "Refers to practices and strategies currently in place intended to prevent and/or control the presence of flies.",
-        "text": "9. Are you using fly bait (scatter, paint-on or spray)?",
+        "desc": PREV_DESC,
+        "text": "9. Are you using <u>fly bait</u> (scatter, paint-on or spray) during the fly season in your region?",
         "type": "radio",
         "options": {"Yes": 0.25, "No": 1.0},
     },
@@ -526,8 +529,8 @@ def render_question_text(question):
 # ----------------------------
 # Step tracker & progress
 # ----------------------------
-TOTAL_STEPS = 13
-if st.session_state.step < 13:
+TOTAL_STEPS = 12
+if st.session_state.step < 12:
     st.progress(st.session_state.step / TOTAL_STEPS)
 
 
@@ -664,7 +667,7 @@ elif 3 <= st.session_state.step <= 11:
             st.rerun()
 
 # ----------------------------
-# STEP 12: COMPUTE & RESULTS GAUGE
+# STEP 12: COMPUTE & SUMMARY PAGE
 # ----------------------------
 elif st.session_state.step == 12:
     if not st.session_state.result:
@@ -675,16 +678,28 @@ elif st.session_state.step == 12:
                 answers_0_1[q["id"]] = q["options"][ans]
             elif q["type"] == "multiselect":
                 ans = st.session_state[q["id"]]
-                vals = [q["options"][a] for a in ans]
-                answers_0_1[q["id"]] = max(vals, default=0.0)
+                if q["id"] == "q4_manure_store":
+                    ans_set = set(ans)
+                    if "Composted on-farm" in ans_set and "Flushed/scraped into lagoon/digester or separator on-site" in ans_set:
+                        # If A, B, C are selected -> default to worst (1.0). Else B and C only -> 0.75
+                        if "Removed from the farm entirely" in ans_set:
+                            answers_0_1[q["id"]] = 1.0
+                        else:
+                            answers_0_1[q["id"]] = 0.75
+                    else:
+                        vals = [q["options"][a] for a in ans]
+                        answers_0_1[q["id"]] = max(vals, default=0.0)
+                else:
+                    vals = [q["options"][a] for a in ans]
+                    answers_0_1[q["id"]] = max(vals, default=0.0)
 
         st.session_state.running = True
         lat, lon = st.session_state.lat, st.session_state.lon
         base_c, upper_c = DEFAULT_BASE_C, DEFAULT_UPPER_C
 
         try:
-            with st.status("Computing your risk score. This takes a second.", expanded=True) as status:
-                status.update(label="Calculating your risk score. This takes a second.")
+            with st.status("Computing your risk score. This takes a moment.", expanded=True) as status:
+                status.update(label="Calculating your risk score. This takes a moment.")
 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future_nws = executor.submit(fetch_and_process_nws, lat, lon, base_c, upper_c)
@@ -719,142 +734,115 @@ elif st.session_state.step == 12:
 
     if st.session_state.result:
         res = st.session_state.result
-        score = float(res["risk_score"])
-        fig = build_gauge(score, height=360)
+        score = int(round(float(res["risk_score"])))
+        band = res["band"]
+        band_color = get_band_color(band)
 
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        render_gauge_legend()
-        st.markdown(
-            f"<div style='text-align:center; font-size:30px; font-weight:800; color:{BRAND_NAVY}; margin-top:-16px; margin-bottom:10px;'>"
-            f"Risk Level: {res['band']}"
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            "<p style='text-align:center; color:#555;'><em>Click Next to view your full assessment and recommended actions.</em></p>",
-            unsafe_allow_html=True,
-        )
+        band_explanations = {
+            "Minimal": "Your score is Minimal, indicating that current conditions and your management practices are helping keep fly pressure low for the next 30 days. This is still the right time to stay proactive.",
+            "Building": "Your score is Building, meaning conditions are beginning to support fly emergence and pressure may rise over the next 30 days. This is the ideal window to tighten prevention before the population accelerates.",
+            "Elevated": "Your score is Elevated, meaning weather and on-farm conditions are favorable for meaningful fly pressure. Prevention should already be active, and targeted intervention is recommended now.",
+            "Peak": "Your score is Peak, meaning strong fly pressure is likely already underway or imminent. Immediate action is recommended to limit further economic impact on the herd.",
+        }
 
-        st.write("")
-        col_back, col_next = st.columns(2)
-        with col_back:
-            if st.button("Back", use_container_width=True, type="secondary"):
-                st.session_state.result = None
-                st.session_state.step = 11
-                st.rerun()
-        with col_next:
-            if st.button("Next", use_container_width=True, type="primary"):
-                st.session_state.step = 13
-                st.rerun()
+        header_col1, header_col2 = st.columns([4, 1])
+        with header_col1:
+            st.markdown("<h2 class='shs-h2' style='margin-top:10px;'>Your Farm's Assessment</h2>", unsafe_allow_html=True)
+        with header_col2:
+            try:
+                st.image(Image.open(LOGO_PATH), use_container_width=True)
+            except Exception:
+                pass
 
-# ----------------------------
-# STEP 13: SUMMARY PAGE
-# ----------------------------
-elif st.session_state.step == 13:
-    res = st.session_state.result
-    score = int(round(float(res["risk_score"])))
-    band = res["band"]
-    band_color = get_band_color(band)
+        top_card = st.container(border=True)
+        with top_card:
+            st.plotly_chart(
+                build_gauge(score, height=285),
+                use_container_width=True,
+                config={"displayModeBar": False},
+            )
+            render_gauge_legend()
 
-    band_explanations = {
-        "Minimal": "Your score is Minimal, indicating that current conditions and your management practices are helping keep fly pressure low. This is still the right time to stay proactive so you are not caught reacting later.",
-        "Building": "Your score is Building, meaning conditions are beginning to support fly emergence and pressure may rise over the next 30 days. This is the ideal window to tighten prevention before the population accelerates.",
-        "Elevated": "Your score is Elevated, meaning weather and on-farm conditions are favorable for meaningful fly pressure. Prevention should already be active, and targeted intervention is recommended now.",
-        "Peak": "Your score is Peak, meaning strong fly pressure is likely already underway or imminent. Immediate action is recommended to limit further economic impact on the herd.",
-    }
-
-    header_col1, header_col2 = st.columns([4, 1])
-    with header_col1:
-        st.markdown("<h2 class='shs-h2' style='margin-top:10px;'>Your Farm's Assessment</h2>", unsafe_allow_html=True)
-    with header_col2:
-        try:
-            st.image(Image.open(LOGO_PATH), use_container_width=True)
-        except Exception:
-            pass
-
-    top_card = st.container(border=True)
-    with top_card:
-        st.plotly_chart(
-            build_gauge(score, height=285),
-            use_container_width=True,
-            config={"displayModeBar": False},
-        )
-        render_gauge_legend()
+            st.markdown(
+                f"""
+                <hr style="border:none; border-top:1px solid rgba(0,40,84,0.10); margin:0.35rem 0 0.75rem 0;">
+                <div style="
+                    display:flex;
+                    align-items:flex-start;
+                    justify-content:space-between;
+                    gap:1.2rem;
+                    padding: 0.1rem 0.15rem 0.25rem 0.15rem;
+                    flex-wrap:wrap;
+                ">
+                    <div style="min-width:155px;">
+                        <div style="font-size:0.95rem; font-weight:700; color:{BRAND_NAVY}; margin-bottom:0.3rem;">
+                            Estimated Risk Score
+                        </div>
+                        <div style="font-size:2.8rem; font-weight:900; line-height:1; color:{band_color};">
+                            {score}
+                        </div>
+                        <div style="font-size:1.25rem; font-weight:800; color:{BRAND_NAVY}; margin-top:0.15rem;">
+                            {band}
+                        </div>
+                    </div>
+                    <div style="
+                        flex:1;
+                        min-width:240px;
+                        font-size:1.02rem;
+                        color:{GRAY};
+                        line-height:1.65;
+                        padding-top:0.15rem;
+                    ">
+                        Scores in this range suggest <strong>{band.lower()}</strong> fly pressure over the next 30 days relative to your current weather pattern and management inputs.
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         st.markdown(
             f"""
-            <hr style="border:none; border-top:1px solid rgba(0,40,84,0.10); margin:0.35rem 0 0.75rem 0;">
-            <div style="
-                display:flex;
-                align-items:flex-start;
-                justify-content:space-between;
-                gap:1.2rem;
-                padding: 0.1rem 0.15rem 0.25rem 0.15rem;
-                flex-wrap:wrap;
-            ">
-                <div style="min-width:155px;">
-                    <div style="font-size:0.95rem; font-weight:700; color:{BRAND_NAVY}; margin-bottom:0.3rem;">
-                        Estimated Risk Score
-                    </div>
-                    <div style="font-size:2.8rem; font-weight:900; line-height:1; color:{band_color};">
-                        {score}
-                    </div>
-                    <div style="font-size:1.25rem; font-weight:800; color:{BRAND_NAVY}; margin-top:0.15rem;">
-                        {band}
-                    </div>
+            <div class="assessment-box">
+                <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">What does this mean?</div>
+                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
+                    We look at the next 7 days of weather combined with 8 years of historical climate data for your ZIP code to
+                    predict how local temperatures and precipitation will drive fly emergency over the next 30 days.
                 </div>
-                <div style="
-                    flex:1;
-                    min-width:240px;
-                    font-size:1.02rem;
-                    color:{GRAY};
-                    line-height:1.65;
-                    padding-top:0.15rem;
-                ">
-                    Scores in this range suggest <strong>{band.lower()}</strong> fly pressure over the next 30 days relative to your current weather pattern and management inputs.
+                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
+                    <strong>{band_explanations.get(band, '')}</strong>
+                </div>
+                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
+                    <strong>Did You Know...</strong> stable flies can lower milk production by 15-30%<sup>1</sup>. Prevention and early intervention
+                    measures are key to a sound fly control strategy. Don't wait until you see cows bunching, by then the economic loss has already begun.
+                </div>
+                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
+                    Check back again for unlimited fly pressure forecasts 30 days from now!
+                </div>
+                <div class="small-note" style="margin-bottom:1.1rem;"><sup>1</sup><a href='{MILK_LOSS_PAPER_URL}' target='_blank'>{MILK_LOSS_FOOTNOTE}</a></div>
+                <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">Take Action</div>
+                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65;">
+                    Protect your herd and your bottom line with the <strong>ShieldStrong® Automated Fly Control System.</strong>
+                    <ul style="margin-top:0.5rem; margin-bottom:0.5rem; padding-left:1.5rem;">
+                        <li>Set-and-forget system eliminates the need for manual application.</li>
+                        <li>Reduce employee exposure to chemicals.</li>
+                        <li>Accurate dosing of insecticides -- every cow, every time.</li>
+                        <li>FREE equipment, maintenance, and product delivery</li>
+                    </ul>
+                    Contact us now for a FREE consultation.
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown(
-        f"""
-        <div class="assessment-box">
-            <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">What does this mean?</div>
-            <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
-                We look at the next 7 days of weather combined with 8 years of historical climate data for your ZIP code to
-                predict how local temperatures and precipitation will drive fly emergence over the next 30 days.
-            </div>
-            <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
-                <strong>{band_explanations.get(band, '')}</strong>
-            </div>
-            <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
-                <strong>Did You Know...</strong> stable flies can lower milk production by 15-30%<sup>1</sup>. Prevention and early intervention
-                measures are key to a sound fly control strategy. Don't wait until you see cows bunching, by then the economic loss has already begun.
-            </div>
-            <div class="small-note" style="margin-bottom:1.1rem;"><sup>1</sup><a href='{MILK_LOSS_PAPER_URL}' target='_blank'>{MILK_LOSS_FOOTNOTE}</a></div>
-            <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">Take Action</div>
-            <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65;">
-                Protect your herd and your bottom line with the <strong>ShieldStrong® Automated Fly Control System.</strong> Our set-and-forget
-                fly control system eliminates the need for manual application, reduces employee exposure to chemicals and consistently
-                applies the recommended dose of insecticide per cow, every time. The ShieldStrong system, combined with our unique
-                rotation of insecticides, are an unstoppable duo for your fly control program. Simply purchase the recommended products
-                and we'll do the rest, including product delivery and refills. Contact us now for a FREE consultation.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("Start Over", use_container_width=True, type="secondary"):
-            reset_all()
-    with c2:
-        st.link_button(
-            "Contact Us",
-            "https://specialtyherdsolutions.com/contact/",
-            type="primary",
-            use_container_width=True,
-        )
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Start Over", use_container_width=True, type="secondary"):
+                reset_all()
+        with c2:
+            st.link_button(
+                "Contact Us",
+                "https://specialtyherdsolutions.com/contact/",
+                type="primary",
+                use_container_width=True,
+            )
