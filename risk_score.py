@@ -70,9 +70,9 @@ def management_index(answers_dict: Mapping[str, float]) -> float:
 # ----------------------------
 
 def _band_from_score(score: int) -> str:
-    if score <= 25:
+    if score <= 10:
         return "Minimal"
-    if score <= 44:
+    if score <= 40:
         return "Building"
     if score <= 79:
         return "Elevated"

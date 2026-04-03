@@ -741,7 +741,7 @@ elif st.session_state.step == 12:
         band_explanations = {
             "Minimal": "Your score is Minimal, indicating that current conditions and your management practices are helping keep fly pressure low for the next 30 days. This is still the right time to stay proactive.",
             "Building": "Your score is Building, meaning conditions are beginning to support fly emergence and pressure may rise over the next 30 days. This is the ideal window to tighten prevention before the population accelerates.",
-            "Elevated": "Your score is Elevated, meaning weather and on-farm conditions are favorable for meaningful fly pressure. Prevention should already be active, and targeted intervention is recommended now.",
+            "Elevated": "Your score is Elevated, meaning conditions are likely supporting meaningful fly pressure over the next 30 days. This is a good time to strengthen prevention efforts and consider targeted intervention.",
             "Peak": "Your score is Peak, meaning strong fly pressure is likely already underway or imminent. Immediate action is recommended to limit further economic impact on the herd.",
         }
 
