@@ -811,12 +811,12 @@ elif st.session_state.step == 12:
                 <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                     <strong>{band_explanations.get(band, '')}</strong>
                 </div>
+                <div style="font-size:1rem; color:{BRAND_TEAL}; font-weight:800; line-height:1.65; margin-bottom:1.35rem;">
+                    Check back again for unlimited fly pressure forecasts 30 days from now!
+                </div>
                 <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                     <strong>Did You Know...</strong> stable flies can lower milk production by 15-30%<sup>1</sup>. Prevention and early intervention
                     measures are key to a sound fly control strategy. Don't wait until you see cows bunching, by then the economic loss has already begun.
-                </div>
-                <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
-                    Check back again for unlimited fly pressure forecasts 30 days from now!
                 </div>
                 <div class="small-note" style="margin-bottom:1.1rem;"><sup>1</sup><a href='{MILK_LOSS_PAPER_URL}' target='_blank'>{MILK_LOSS_FOOTNOTE}</a></div>
                 <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">Take Action</div>
@@ -828,7 +828,9 @@ elif st.session_state.step == 12:
                         <li>Accurate dosing of insecticides — every cow, every time.</li>
                         <li>FREE equipment, maintenance, and product delivery</li>
                     </ul>
-                    Contact us now for a FREE consultation.
+                    <div style="color:{BRAND_TEAL}; font-weight:800; margin-top:0.35rem;">
+                        Contact us now for a FREE consultation.
+                    </div>
                 </div>
             </div>
             """,
