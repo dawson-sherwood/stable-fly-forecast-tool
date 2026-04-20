@@ -806,7 +806,7 @@ elif st.session_state.step == 12:
                 <div style="font-size:1.55rem; font-weight:800; color:{BRAND_NAVY}; margin-bottom:0.9rem;">What does this mean?</div>
                 <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                     We look at the next 7 days of weather combined with 8 years of historical climate data for your ZIP code to
-                    predict how local temperatures and precipitation will drive fly emergency over the next 30 days.
+                    predict how local temperatures and precipitation will drive fly emergence over the next 30 days.
                 </div>
                 <div style="font-size:1rem; color:{BRAND_NAVY}; line-height:1.65; margin-bottom:0.9rem;">
                     <strong>{band_explanations.get(band, '')}</strong>
